@@ -22,13 +22,19 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+        void draw_circle(int x, int y);
     
     struct xyword {
         string word;
         float x;
         float y;
+        float timestamp;
+        int page;
     };
 
+        void render_xyword(vector<xyword> xywords, int crr_page);
+
+    
     xyword xyword_tmp;
     ofVec2f anch, margin;
     ofTrueTypeFont font;

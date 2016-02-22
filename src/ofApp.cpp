@@ -6,7 +6,7 @@
 
 void ofApp::setup(){
     ofBackground(0, 0, 0);
-    margin.set(100, 100);
+    margin.set(200, 400);
     font_size = 20;
     line_height = font_size * 4;
     anch.set(margin.x, margin.y);
@@ -15,6 +15,7 @@ void ofApp::setup(){
     //font.load("../../liberation.ttf", font_size);
     // font.load("../../vera.ttf", font_size);
     font.load("../../lekton.ttf", font_size);
+    //read_xywords();
     
     
     // read words into strwords
@@ -40,7 +41,7 @@ void ofApp::setup(){
         anch.x += (font_size * 3 / 4) * (strwords[i].length() + 1);
         // anch.x += word_offset.x;
         // anch.x += font_size;
-        if (anch.x > ofGetWidth() - margin.x || strwords[i] == "\n" ) {
+        if (anch.x > ofGetWidth() - margin.x * 2 || strwords[i] == "\n" ) {
             anch.x = margin.x;
             anch.y += line_height;
         }
@@ -60,8 +61,8 @@ void ofApp::update(){
     double x = receiver->get_gaze_x();
     double y = receiver->get_gaze_y();
     double time = receiver->get_gaze_timestamp();
-    ofSetColor(0, 255, 0, 100);
-    ofCircle(x, y, 5);
+    draw_circle(x, y);
+    // render_xyword(xywords, crr_page);
     for(int i = head; i <= tail; i++) {
         xyword_tmp = xywords[i];
         ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
@@ -73,6 +74,11 @@ void ofApp::update(){
             break;
         }
     }
+}
+
+void ofApp::draw_circle(int x, int y) {
+    ofSetColor(0, 255, 0, 100);
+    ofCircle(x, y, 5);
 }
 
 //--------------------------------------------------------------
@@ -103,6 +109,15 @@ void ofApp::render_page() {
                         "/" +
                         to_string(sections.size());
     ofDrawBitmapString(page_info, 10, 10);
+}
+
+void ofApp::render_xyword(vector<xyword> xywords, int crr_page) {
+    for(int i = 0; i < xywords.size(); i++) {
+        xyword xyw = xywords[i];
+        if (xyw.page == crr_page) {
+            draw_circle(xyw.x, xyw.y);
+        }
+    }
 }
 
 //--------------------------------------------------------------
