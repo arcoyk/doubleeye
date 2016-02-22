@@ -8,11 +8,14 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     margin.set(100, 100);
     font_size = 20;
-    line_height = 50;
+    line_height = font_size * 4;
     anch.set(margin.x, margin.y);
     ofCircle(100, 100, 100);
     ofSetBackgroundAuto(false);
-    font.load("../../VeraMono.ttf", font_size);
+    //font.load("../../liberation.ttf", font_size);
+    // font.load("../../vera.ttf", font_size);
+    font.load("../../lekton.ttf", font_size);
+    
     
     // read words into strwords
     ifstream script_stream = ifstream("../../../../script.txt");
@@ -25,17 +28,16 @@ void ofApp::setup(){
                      boost::algorithm::token_compress_on);
         copy(words_tmp.begin(), words_tmp.end(), back_inserter(strwords));
     }
-    
     // convert strwords into xywords with x, y
     for(int i = 0; i < strwords.size(); i++) {
-        boost::trim(strwords[i]);
         xyword xyword_tmp = {
             strwords[i],
             anch.x,
             anch.y
         };
+        cout << strwords[i] << endl;
         xywords.push_back(xyword_tmp);
-        anch.x += font_size * strwords[i].length();
+        anch.x += (font_size * 3 / 4) * (strwords[i].length() + 1);
         // anch.x += word_offset.x;
         // anch.x += font_size;
         if (anch.x > ofGetWidth() - margin.x || strwords[i] == "\n" ) {
@@ -48,16 +50,29 @@ void ofApp::setup(){
         }
     }
     sections.push_back(strwords.size() - 1);
-    
+    sprintf(receiveData,"0,0,0\n");
     receiver=new ofTobiiUDPReceiver(receiveData,8888);
     receiver->startThread();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    cout << "x: "<< receiver->get_gaze_x()<<endl;
-    cout << "y: "<<receiver->get_gaze_y()<<endl;
-    cout << "timestap: "<<receiver->get_gaze_timestamp()<<endl;
+    double x = receiver->get_gaze_x();
+    double y = receiver->get_gaze_y();
+    double time = receiver->get_gaze_timestamp();
+    ofSetColor(0, 255, 0, 100);
+    ofCircle(x, y, 5);
+    for(int i = head; i <= tail; i++) {
+        xyword_tmp = xywords[i];
+        ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
+        ofVec2f eye_posi = ofVec2f(x, y);
+        if (word_posi.distance(eye_posi) < 30) {
+            ofSetColor(255, 100, 100, 255);
+            font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
+            cout << x << "," << y << "," << time << "," << xyword_tmp.word << endl;
+            break;
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -71,19 +86,17 @@ void ofApp::draw(){
 }
 
 void ofApp::render_page() {
-    ofBackground(0, 0, 0);
-    ofSetColor(255, 255, 255, 255);
+    ofBackground(255);
+    ofSetColor(0);
     anch.set(margin.x, margin.y);
     head = crr_page == 0 ? 0 : sections[crr_page - 1] + 1;
     tail = sections[crr_page];
     xyword tmp = {"", 0, 0};
     for(int i = head; i <= tail; i++) {
         tmp = xywords[i];
-        // font.drawString(to_string(tmp.word.length()), tmp.x, tmp.y);
-        ofCircle(tmp.x, tmp.y, 1);
-        ofDrawBitmapString(std::to_string(tmp.word.length()),
-                           tmp.x + font_size * tmp.word.length(),
-                           tmp.y, 2);
+//        ofDrawBitmapString(std::to_string(tmp.word.length()),
+//                           tmp.x + font_size * tmp.word.length(),
+//                           tmp.y, 2);
         font.drawString(tmp.word, tmp.x, tmp.y);
     }
     string page_info = std::to_string(crr_page + 1) +
@@ -106,6 +119,17 @@ void ofApp::keyPressed(int key){
         }
     }
     render_flag = true;
+    
+    switch (key){
+        case 'f':
+            //フルスクリーンのon/off
+            ofToggleFullscreen();
+            
+        case 'g':
+            //Gui表示のon/off
+//            gui.toggleDraw();
+              break;
+    }
 }
 
 //--------------------------------------------------------------
@@ -115,16 +139,18 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-    for(int i = head; i <= tail; i++) {
-        xyword_tmp = xywords[i];
-        ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
-        ofVec2f mouse_posi = ofVec2f(x, y);
-        if (word_posi.distance(mouse_posi) < 10) {
-            ofSetColor(255, 100, 100, 255);
-            font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
-            break;
-        }
-    }
+//    for(int i = head; i <= tail; i++) {
+//        xyword_tmp = xywords[i];
+//        ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
+//        ofVec2f mouse_posi = ofVec2f(x, y);
+//        if (word_posi.distance(mouse_posi) < 10) {
+//            ofSetColor(255, 100, 100, 255);
+//            font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
+//            break;
+//        }
+//    }
+//    ofSetColor(0, 255, 0, 100);
+//    ofCircle(x, y, 5);
 }
 
 //--------------------------------------------------------------
