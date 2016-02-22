@@ -30,8 +30,9 @@ class ofApp : public ofBaseApp{
         float y;
         float timestamp;
         int page;
+        int index;
     };
-
+        bool in_word(int x, int y, xyword xyword);
         void render_xyword(vector<xyword> xywords, int crr_page);
 
     

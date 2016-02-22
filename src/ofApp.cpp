@@ -70,10 +70,19 @@ void ofApp::update(){
         if (word_posi.distance(eye_posi) < 30) {
             ofSetColor(255, 100, 100, 255);
             font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
-            cout << x << "," << y << "," << time << "," << xyword_tmp.word << endl;
+            cout << crr_page << ","
+            << x << ","
+            << y << ","
+            << xyword_tmp.word
+            << i << ","
+            << time << endl;
             break;
         }
     }
+}
+
+bool ofApp::in_word(int x, int y, xyword wyword) {
+    return true;
 }
 
 void ofApp::draw_circle(int x, int y) {
