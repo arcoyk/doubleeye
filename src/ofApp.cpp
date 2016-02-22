@@ -81,8 +81,16 @@ void ofApp::update(){
     }
 }
 
-bool ofApp::in_word(int x, int y, xyword wyword) {
-    return true;
+bool ofApp::in_word(int x, int y, xyword xyword) {
+    int word_length = xyword.word.length() * font_size;
+    int word_height = font_size;
+    if (xyword.x < x &&
+        x < xyword.x + word_length &&
+        xyword.y < y &&
+        y < xyword.y + word_height) {
+        return true;
+    }
+    return false;
 }
 
 void ofApp::draw_circle(int x, int y) {
