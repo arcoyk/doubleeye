@@ -54,6 +54,10 @@ void ofApp::setup(){
     sprintf(receiveData,"0,0,0\n");
     receiver=new ofTobiiUDPReceiver(receiveData,8888);
     receiver->startThread();
+    
+    string filename="EyeTrack_"+ofGetTimestampString()+".txt";
+    file.open( ofToDataPath(filename).c_str());
+    file<<"page,x,y,word,index,timestamp"<< endl;
 }
 
 //--------------------------------------------------------------
@@ -70,12 +74,10 @@ void ofApp::update(){
         if (word_posi.distance(eye_posi) < 30) {
             ofSetColor(255, 100, 100, 255);
             font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
-            cout << crr_page << ","
-            << x << ","
-            << y << ","
-            << xyword_tmp.word
-            << i << ","
-            << time << endl;
+
+            cout << x << "," << y << "," << time << "," << xyword_tmp.word << "," <<crr_page<<endl;
+            file<< crr_page << "," << x << ","  <<y << ","<< index << "," << xyword_tmp.word << "," <<time<<endl;
+
             break;
         }
     }
@@ -224,3 +226,39 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
+
+vector<ofApp::xyword> ofApp::readFile(string filename){
+    ifstream file;
+    file.open( ofToDataPath(filename).c_str() );
+    
+    vector<xyword> xywords;
+    
+    int count=0;
+    while(!file.eof())
+    {
+        if(count){ //skip first line
+        string str;
+        getline(file, str);
+        
+        vector<string> line=ofSplitString(str, ",");
+        
+        xyword xyword_tmp;
+        xyword_tmp.page=ofToInt(line[0]);
+        xyword_tmp.x=ofToFloat(line[1]);
+        xyword_tmp.y=ofToFloat(line[2]);
+        xyword_tmp.word=ofToFloat(line[3]);
+        xyword_tmp.index=ofToInt(line[4]);
+        xyword_tmp.timestamp=ofToFloat(line[5]);
+        
+        xywords.push_back(xyword_tmp);
+        count++;
+        }
+    }
+    
+     cout << "Read %d lines " << count << endl;
+    
+    file.close();
+    return xywords;
+}
+
+
