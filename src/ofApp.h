@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofTobiiUDPReceiver.h"
+#include <fstream>  
 
 class ofApp : public ofBaseApp{
 
@@ -27,15 +28,23 @@ class ofApp : public ofBaseApp{
         string word;
         float x;
         float y;
+        float timestamp;
+        int page;
+        int index;
     };
-
+    
+        vector<xyword> readFile(string filename);
+    
+    
+    
+    ofstream file;
     xyword xyword_tmp;
     ofVec2f anch, margin;
     ofTrueTypeFont font;
     vector<int> sections;
     vector<xyword> xywords;
     bool render_flag = true;
-    int head, tail, crr_page, line_height, font_size;
+    int head, tail, crr_page, line_height, font_size,index;
 
     // For Tobi Receiver
     ofTobiiUDPReceiver* receiver;
