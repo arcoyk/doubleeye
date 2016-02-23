@@ -1,0 +1,1 @@
+page,x,y,word,word_index,timestamp

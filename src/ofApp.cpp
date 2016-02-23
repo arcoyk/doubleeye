@@ -29,7 +29,7 @@ void ofApp::setup(){
                      boost::algorithm::token_compress_on);
         copy(words_tmp.begin(), words_tmp.end(), back_inserter(strwords));
     }
-    // convert strwords into xywords with x, y
+    // preprocess: convert strwords into xywords with x, y
     for(int i = 0; i < strwords.size(); i++) {
         xyword xyword_tmp = {
             strwords[i],
@@ -57,7 +57,7 @@ void ofApp::setup(){
     
     string filename="EyeTrack_"+ofGetTimestampString()+".txt";
     file.open( ofToDataPath(filename).c_str());
-    file<<"page,x,y,word,index,timestamp"<< endl;
+    file << "page,x,y,word,word_index,timestamp" << endl;
 }
 
 //--------------------------------------------------------------
@@ -71,7 +71,7 @@ void ofApp::update(){
         xyword_tmp = xywords[i];
         ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
         ofVec2f eye_posi = ofVec2f(x, y);
-        if (word_posi.distance(eye_posi) < 30) {
+        if (in_word(x, y, xyword_tmp)) {
             ofSetColor(255, 100, 100, 255);
             font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
 
@@ -84,7 +84,7 @@ void ofApp::update(){
 }
 
 bool ofApp::in_word(int x, int y, xyword xyword) {
-    int word_length = xyword.word.length() * font_size;
+    int word_length = xyword.word.length() *  font_size * 1 / 2;
     int word_height = font_size;
     if (xyword.x < x &&
         x < xyword.x + word_length &&
@@ -106,6 +106,7 @@ void ofApp::draw(){
     // ofCircle(100, 100, 100);
     if (render_flag) {
         render_page();
+        render_eyeprint(eyeprints, crr_page);
         render_flag = false;
     }
 }
@@ -119,9 +120,6 @@ void ofApp::render_page() {
     xyword tmp = {"", 0, 0};
     for(int i = head; i <= tail; i++) {
         tmp = xywords[i];
-//        ofDrawBitmapString(std::to_string(tmp.word.length()),
-//                           tmp.x + font_size * tmp.word.length(),
-//                           tmp.y, 2);
         font.drawString(tmp.word, tmp.x, tmp.y);
     }
     string page_info = std::to_string(crr_page + 1) +
@@ -130,11 +128,11 @@ void ofApp::render_page() {
     ofDrawBitmapString(page_info, 10, 10);
 }
 
-void ofApp::render_xyword(vector<xyword> xywords, int crr_page) {
-    for(int i = 0; i < xywords.size(); i++) {
-        xyword xyw = xywords[i];
-        if (xyw.page == crr_page) {
-            draw_circle(xyw.x, xyw.y);
+void ofApp::render_eyeprint(vector<eyeprint> eyeprints, int crr_page, float time) {
+    for(int i = 0; i < eyeprints.size(); i++) {
+        eyeprint ep = eyeprints[i];
+        if (ep.page == crr_page && time < ep.timestamp) {
+            draw_circle(ep.x, ep.y);
         }
     }
 }
@@ -168,7 +166,7 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    
+    eyeprints = readFile("EyeTrack_2016-02-22-21-55-36-190.txt");
 }
 
 //--------------------------------------------------------------
@@ -179,7 +177,7 @@ void ofApp::mouseMoved(int x, int y ){
 //        ofVec2f mouse_posi = ofVec2f(x, y);
 //        if (word_posi.distance(mouse_posi) < 10) {
 //            ofSetColor(255, 100, 100, 255);
-//            font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
+//            ord, xyword_tmp.x, xyword_tmp.y);
 //            break;
 //        }
 //    }
@@ -227,38 +225,36 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 
-vector<ofApp::xyword> ofApp::readFile(string filename){
+vector<ofApp::eyeprint> ofApp::readFile(string filename){
     ifstream file;
     file.open( ofToDataPath(filename).c_str() );
-    
-    vector<xyword> xywords;
-    
+    vector<eyeprint> eyeprints;
     int count=0;
     while(!file.eof())
     {
+//        cout << "Read lines " << count << endl;
         if(count){ //skip first line
-        string str;
-        getline(file, str);
-        
-        vector<string> line=ofSplitString(str, ",");
-        
-        xyword xyword_tmp;
-        xyword_tmp.page=ofToInt(line[0]);
-        xyword_tmp.x=ofToFloat(line[1]);
-        xyword_tmp.y=ofToFloat(line[2]);
-        xyword_tmp.word=ofToFloat(line[3]);
-        xyword_tmp.index=ofToInt(line[4]);
-        xyword_tmp.timestamp=ofToFloat(line[5]);
-        
-        xywords.push_back(xyword_tmp);
-        count++;
+            string str;
+            getline(file, str);
+            vector<string> line=ofSplitString(str, ",");
+            if(line.size()>2){
+                eyeprint tmp;
+                tmp.page=ofToInt(line[0]);
+                tmp.x=ofToFloat(line[1]);
+                tmp.y=ofToFloat(line[2]);
+                tmp.word=ofToFloat(line[3]);
+                tmp.word_index=ofToInt(line[4]);
+                tmp.timestamp=ofToFloat(line[5]);
+                eyeprints.push_back(tmp);
+            }
         }
+        count++;
     }
     
-     cout << "Read %d lines " << count << endl;
+    // cout << "Read lines " << count << endl;
     
     file.close();
-    return xywords;
+    return eyeprints;
 }
 
 
