@@ -62,9 +62,10 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    double x = receiver->get_gaze_x();
+    double tmp_x = receiver->get_gaze_x();
     double y = receiver->get_gaze_y();
     double time = receiver->get_gaze_timestamp();
+    double x=ofMap(tmp_x, -1920,0,0,1920);
     draw_circle(x, y);
     // render_xyword(xywords, crr_page);
     for(int i = head; i <= tail; i++) {
@@ -73,7 +74,7 @@ void ofApp::update(){
         ofVec2f eye_posi = ofVec2f(x, y);
         if (in_word(x, y, xyword_tmp)) {
             ofSetColor(255, 100, 100, 255);
-            font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
+            //font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
 
             cout << x << "," << y << "," << time << "," << xyword_tmp.word << "," <<crr_page<<endl;
             file<< crr_page << "," << x << ","  <<y << ","<< index << "," << xyword_tmp.word << "," <<time<<endl;
@@ -97,7 +98,8 @@ bool ofApp::in_word(int x, int y, xyword xyword) {
 
 void ofApp::draw_circle(int x, int y) {
     ofSetColor(0, 255, 0, 100);
-    ofCircle(x, y, 5);
+  
+   // ofCircle(x, y, 5);
 }
 
 //--------------------------------------------------------------
@@ -128,10 +130,10 @@ void ofApp::render_page() {
     ofDrawBitmapString(page_info, 10, 10);
 }
 
-void ofApp::render_eyeprint(vector<eyeprint> eyeprints, int crr_page, float time) {
+void ofApp::render_eyeprint(vector<eyeprint> eyeprints, int crr_page) {
     for(int i = 0; i < eyeprints.size(); i++) {
         eyeprint ep = eyeprints[i];
-        if (ep.page == crr_page && time < ep.timestamp) {
+        if (ep.page == crr_page ) {
             draw_circle(ep.x, ep.y);
         }
     }
@@ -166,7 +168,7 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    eyeprints = readFile("EyeTrack_2016-02-22-21-55-36-190.txt");
+  //  eyeprints = readFile("EyeTrack_2016-02-22-21-55-36-190.txt");
 }
 
 //--------------------------------------------------------------

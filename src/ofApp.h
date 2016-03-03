@@ -44,7 +44,7 @@ class ofApp : public ofBaseApp{
     ofstream file;
 
     bool in_word(int x, int y, xyword xyword);
-    void render_eyeprint(vector<eyeprint> eyeprints, int crr_page, float time);
+    void render_eyeprint(vector<eyeprint> eyeprints, int crr_page);
 
     
     xyword xyword_tmp;
