@@ -23,6 +23,7 @@ class ofApp : public ofBaseApp{
     void gotMessage(ofMessage msg);
     void draw_circle(int x, int y);
     void draw_debug(double x, double y, double timestamp);
+    void script_to_xywords();
     
     struct xyword {
         string word;
@@ -47,10 +48,10 @@ class ofApp : public ofBaseApp{
     bool in_word(int x, int y, xyword xyword);
     void render_eyeprint(vector<eyeprint> eyeprints, int crr_page);
 
-    
     xyword xyword_tmp;
     ofVec2f anch, margin;
     ofTrueTypeFont font;
+    ofVec2f curr_eye;
     vector<eyeprint> eyeprints;
     vector<int> sections;
     vector<xyword> xywords;

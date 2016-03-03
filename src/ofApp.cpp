@@ -3,6 +3,8 @@
 #include "iostream"
 #include "boost/algorithm/string.hpp"
 
+#define LOG_FILE_NAME "EyeTrack_2016-02-22-21-55-36-190.txt"
+#define SCRIPT_FILE_NAME "script.txt"
 
 void ofApp::setup(){
     ofBackground(0, 0, 0);
@@ -12,14 +14,9 @@ void ofApp::setup(){
     anch.set(margin.x, margin.y);
     ofCircle(100, 100, 100);
     ofSetBackgroundAuto(false);
-    //font.load("../../liberation.ttf", font_size);
-    // font.load("../../vera.ttf", font_size);
+    // Set font here: lekton.ttf or vera.ttf or liberation.tff
     font.load("../../lekton.ttf", font_size);
-    //read_xywords();
-    
-    
-    // read words into strwords
-    ifstream script_stream = ifstream("../../../../script.txt");
+    ifstream script_stream = ifstream(SCRIPT_FILE_NAME);
     string script;
     string delims = " ";
     vector<string> strwords;
@@ -29,19 +26,18 @@ void ofApp::setup(){
                      boost::algorithm::token_compress_on);
         copy(words_tmp.begin(), words_tmp.end(), back_inserter(strwords));
     }
-    // preprocess: convert strwords into xywords with x, y
     for(int i = 0; i < strwords.size(); i++) {
-        xyword xyword_tmp = {
+        ofApp::xyword xyword_tmp = {
             strwords[i],
             anch.x,
             anch.y
         };
         cout << strwords[i] << endl;
         xywords.push_back(xyword_tmp);
-        anch.x += (font_size * 3 / 4) * (strwords[i].length() + 1);
+        anch.x += (ofApp::font_size * 3 / 4) * (strwords[i].length() + 1);
         // anch.x += word_offset.x;
         // anch.x += font_size;
-        if (anch.x > ofGetWidth() - margin.x * 2 || strwords[i] == "\n" ) {
+        if (anch.x > ofGetWidth() - ofApp::margin.x * 2 || strwords[i] == "\n" ) {
             anch.x = margin.x;
             anch.y += line_height;
         }
@@ -51,10 +47,12 @@ void ofApp::setup(){
         }
     }
     sections.push_back(strwords.size() - 1);
+    // script_to_xywords();
+    // Start UDP
     sprintf(receiveData,"0,0,0\n");
-    receiver=new ofTobiiUDPReceiver(receiveData,8888);
+    receiver = new ofTobiiUDPReceiver(receiveData,8888);
     receiver->startThread();
-    
+    // Prepare log file
     string filename="EyeTrack_"+ofGetTimestampString()+".txt";
     file.open( ofToDataPath(filename).c_str());
     file << "page,x,y,word,word_index,timestamp" << endl;
@@ -62,26 +60,30 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    // Tobiiから視線情報を取得
     double tmp_x = receiver->get_gaze_x();
-    double y = receiver->get_gaze_y();
+    curr_eye.x = ofMap(tmp_x, -1920,0,0,1920);
+    curr_eye.y = receiver->get_gaze_y();
     double time = receiver->get_gaze_timestamp();
-    double x=ofMap(tmp_x, -1920,0,0,1920);
-   // draw_circle(x, y);
-    // render_xyword(xywords, crr_page);
-    if(debug)draw_debug(x,y,time);
-    for(int i = head; i <= tail; i++) {
-        xyword_tmp = xywords[i];
-        ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
-        ofVec2f eye_posi = ofVec2f(x, y);
-        if (in_word(x, y, xyword_tmp)) {
-            ofSetColor(255, 100, 100, 255);
-            //font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
+    file << crr_page << "," << curr_eye.x << ","  << curr_eye.y << ","<< index << "," << xyword_tmp.word << "," << time << endl;
+}
 
-            cout << x << "," << y << "," << time << "," << xyword_tmp.word << "," <<crr_page<<endl;
-           if(record_log) file<< crr_page << "," << x << ","  <<y << ","<< index << "," << xyword_tmp.word << "," <<time<<endl;
-
-            break;
+//--------------------------------------------------------------
+void ofApp::draw(){
+    ofSetColor(255, 0, 0, 100);
+    // ofCircle(100, 100, 100);
+    if (render_flag) {
+        render_page();
+        if (show_log) {
+            render_eyeprint(eyeprints, crr_page);
         }
+        // デバッグ表示
+        if(debug) {
+            draw_debug(curr_eye.x, curr_eye.y, time);
+            draw_circle(curr_eye.x, curr_eye.y);
+        }
+        
+        render_flag = false;
     }
 }
 
@@ -104,21 +106,7 @@ void ofApp::draw_circle(int x, int y) {
 
 void ofApp::draw_debug(double x, double y, double timestamp) {
     ofSetColor(0,0,0);
-   ofDrawBitmapString("X: "+ofToString(x)+ ", Y: "+ofToString(y)+" TimeStamp: "+ofToString(timestamp), 10,50);
-}
-
-
-
-//--------------------------------------------------------------
-void ofApp::draw(){
-    ofSetColor(255, 0, 0, 100);
-    // ofCircle(100, 100, 100);
-    if (render_flag) {
-        render_page();
-        render_eyeprint(eyeprints, crr_page);
-        render_flag = false;
-    }
-    
+    ofDrawBitmapString("X: "+ofToString(x)+ ", Y: "+ofToString(y)+" TimeStamp: "+ofToString(timestamp), 10,50);
 }
 
 void ofApp::render_page() {
@@ -183,70 +171,14 @@ void ofApp::keyPressed(int key){
             
         case 'l':
             //Log読み込みのon/off
-            show_log=!show_log;
+            eyeprints = readFile(LOG_FILE_NAME);
+            show_log =! show_log;
             break;
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-  //  eyeprints = readFile("EyeTrack_2016-02-22-21-55-36-190.txt");
-}
+void script_to_xywords() {
 
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-//    for(int i = head; i <= tail; i++) {
-//        xyword_tmp = xywords[i];
-//        ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
-//        ofVec2f mouse_posi = ofVec2f(x, y);
-//        if (word_posi.distance(mouse_posi) < 10) {
-//            ofSetColor(255, 100, 100, 255);
-//            ord, xyword_tmp.x, xyword_tmp.y);
-//            break;
-//        }
-//    }
-//    ofSetColor(0, 255, 0, 100);
-//    ofCircle(x, y, 5);
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){
-    
 }
 
 vector<ofApp::eyeprint> ofApp::readFile(string filename){
