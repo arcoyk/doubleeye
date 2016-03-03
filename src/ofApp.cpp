@@ -3,7 +3,7 @@
 #include "iostream"
 #include "boost/algorithm/string.hpp"
 
-#define LOG_FILE_NAME "EyeTrack_2016-02-22-21-55-36-190.txt"
+#define LOG_FILE_NAME "EyeTrack_2016-03-03-19-42-52-921.txt"
 #define SCRIPT_FILE_NAME "script.txt"
 
 void ofApp::setup(){
@@ -16,7 +16,7 @@ void ofApp::setup(){
     ofSetBackgroundAuto(false);
     // Set font here: lekton.ttf or vera.ttf or liberation.tff
     font.load("../../lekton.ttf", font_size);
-    ifstream script_stream = ifstream(SCRIPT_FILE_NAME);
+    ifstream script_stream = ifstream("script.txt");
     string script;
     string delims = " ";
     vector<string> strwords;
@@ -34,9 +34,7 @@ void ofApp::setup(){
         };
         cout << strwords[i] << endl;
         xywords.push_back(xyword_tmp);
-        anch.x += (ofApp::font_size * 3 / 4) * (strwords[i].length() + 1);
-        // anch.x += word_offset.x;
-        // anch.x += font_size;
+        anch.x += (font_size * 3 / 4) * (strwords[i].length() + 1);
         if (anch.x > ofGetWidth() - ofApp::margin.x * 2 || strwords[i] == "\n" ) {
             anch.x = margin.x;
             anch.y += line_height;
@@ -47,7 +45,6 @@ void ofApp::setup(){
         }
     }
     sections.push_back(strwords.size() - 1);
-    // script_to_xywords();
     // Start UDP
     sprintf(receiveData,"0,0,0\n");
     receiver = new ofTobiiUDPReceiver(receiveData,8888);
@@ -77,14 +74,14 @@ void ofApp::draw(){
         if (show_log) {
             render_eyeprint(eyeprints, crr_page);
         }
-        // デバッグ表示
-        if(debug) {
-            draw_debug(curr_eye.x, curr_eye.y);
-            draw_circle(curr_eye.x, curr_eye.y);
-        }
-        
         render_flag = false;
     }
+    // デバッグ表示
+    if(debug) {
+        // draw_debug(curr_eye.x, curr_eye.y);
+        draw_circle(curr_eye.x, curr_eye.y);
+    }
+
 }
 
 bool ofApp::in_word(int x, int y, xyword xyword) {
