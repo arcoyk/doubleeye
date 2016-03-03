@@ -79,7 +79,7 @@ void ofApp::draw(){
         }
         // デバッグ表示
         if(debug) {
-            draw_debug(curr_eye.x, curr_eye.y, time);
+            draw_debug(curr_eye.x, curr_eye.y);
             draw_circle(curr_eye.x, curr_eye.y);
         }
         
@@ -104,9 +104,9 @@ void ofApp::draw_circle(int x, int y) {
     ofCircle(x, y, 5);
 }
 
-void ofApp::draw_debug(double x, double y, double timestamp) {
+void ofApp::draw_debug(double x, double y) {
     ofSetColor(0,0,0);
-    ofDrawBitmapString("X: "+ofToString(x)+ ", Y: "+ofToString(y)+" TimeStamp: "+ofToString(timestamp), 10,50);
+    ofDrawBitmapString("X: "+ofToString(x)+ ", Y: "+ofToString(y), 10,50);
 }
 
 void ofApp::render_page() {
@@ -176,6 +176,18 @@ void ofApp::keyPressed(int key){
             break;
     }
 }
+
+
+void ofApp::keyReleased(int key){};
+void ofApp::mouseMoved(int x, int y ){};
+void ofApp::mouseDragged(int x, int y, int button){};
+void ofApp::mousePressed(int x, int y, int button){};
+void ofApp::mouseReleased(int x, int y, int button){};
+void ofApp::mouseEntered(int x, int y){};
+void ofApp::mouseExited(int x, int y){};
+void ofApp::windowResized(int w, int h){};
+void ofApp::dragEvent(ofDragInfo dragInfo){};
+void ofApp::gotMessage(ofMessage msg){};
 
 void script_to_xywords() {
 

@@ -22,7 +22,7 @@ class ofApp : public ofBaseApp{
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     void draw_circle(int x, int y);
-    void draw_debug(double x, double y, double timestamp);
+    void draw_debug(double x, double y);
     void script_to_xywords();
     
     struct xyword {

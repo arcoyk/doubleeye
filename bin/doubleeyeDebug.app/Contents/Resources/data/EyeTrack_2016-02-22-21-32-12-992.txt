@@ -1,1 +1,0 @@
-xpage,x,y,word,index,timestamp
