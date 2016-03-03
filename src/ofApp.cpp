@@ -66,8 +66,9 @@ void ofApp::update(){
     double y = receiver->get_gaze_y();
     double time = receiver->get_gaze_timestamp();
     double x=ofMap(tmp_x, -1920,0,0,1920);
-    draw_circle(x, y);
+   // draw_circle(x, y);
     // render_xyword(xywords, crr_page);
+    if(debug)draw_debug(x,y,time);
     for(int i = head; i <= tail; i++) {
         xyword_tmp = xywords[i];
         ofVec2f word_posi = ofVec2f(xyword_tmp.x, xyword_tmp.y);
@@ -77,7 +78,7 @@ void ofApp::update(){
             //font.drawString(xyword_tmp.word, xyword_tmp.x, xyword_tmp.y);
 
             cout << x << "," << y << "," << time << "," << xyword_tmp.word << "," <<crr_page<<endl;
-            file<< crr_page << "," << x << ","  <<y << ","<< index << "," << xyword_tmp.word << "," <<time<<endl;
+           if(record_log) file<< crr_page << "," << x << ","  <<y << ","<< index << "," << xyword_tmp.word << "," <<time<<endl;
 
             break;
         }
@@ -98,9 +99,15 @@ bool ofApp::in_word(int x, int y, xyword xyword) {
 
 void ofApp::draw_circle(int x, int y) {
     ofSetColor(0, 255, 0, 100);
-  
-   // ofCircle(x, y, 5);
+    ofCircle(x, y, 5);
 }
+
+void ofApp::draw_debug(double x, double y, double timestamp) {
+    ofSetColor(0,0,0);
+   ofDrawBitmapString("X: "+ofToString(x)+ ", Y: "+ofToString(y)+" TimeStamp: "+ofToString(timestamp), 10,50);
+}
+
+
 
 //--------------------------------------------------------------
 void ofApp::draw(){
@@ -111,6 +118,7 @@ void ofApp::draw(){
         render_eyeprint(eyeprints, crr_page);
         render_flag = false;
     }
+    
 }
 
 void ofApp::render_page() {
@@ -163,6 +171,20 @@ void ofApp::keyPressed(int key){
             //Gui表示のon/off
 //            gui.toggleDraw();
               break;
+        case 'd':
+            //Debug表示のon/off
+            debug=!debug;
+            break;
+            
+        case 'r':
+            //Recordのon/off
+            record_log=!record_log;
+            break;
+            
+        case 'l':
+            //Log読み込みのon/off
+            show_log=!show_log;
+            break;
     }
 }
 

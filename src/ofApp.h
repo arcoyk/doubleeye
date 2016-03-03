@@ -22,6 +22,7 @@ class ofApp : public ofBaseApp{
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     void draw_circle(int x, int y);
+    void draw_debug(double x, double y, double timestamp);
     
     struct xyword {
         string word;
@@ -54,8 +55,12 @@ class ofApp : public ofBaseApp{
     vector<int> sections;
     vector<xyword> xywords;
     bool render_flag = true;
+    
+    bool debug=false, show_log=false, record_log=false;
+    
     int head, tail, crr_page, line_height, font_size,index;
     float run_from_time;
+    
 
     // For Tobi Receiver
     ofTobiiUDPReceiver* receiver;
