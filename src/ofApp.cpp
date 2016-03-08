@@ -4,7 +4,7 @@
 #include "boost/algorithm/string.hpp"
 
 
-#define LOG_FILE_NAME "EyeTrack_2016-03-05-17-08-15-969.txt"
+#define LOG_FILE_NAME "Alicia.txt"
 #define SCRIPT_FILE_NAME "script.txt"
 
 void ofApp::setup(){
