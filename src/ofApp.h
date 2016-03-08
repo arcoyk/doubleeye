@@ -29,6 +29,7 @@ class ofApp : public ofBaseApp{
         string word;
         float x;
         float y;
+        float weight;
     };
     
     struct eyeprint {
@@ -41,23 +42,25 @@ class ofApp : public ofBaseApp{
     };
     
     vector<eyeprint> readFile(string filename);
-    
+    string filename;
     
     ofstream file;
 
     bool in_word(int x, int y, xyword xyword);
     void render_eyeprint(vector<eyeprint> eyeprints, int crr_page);
+    void render_fixed_words(vector<eyeprint> eyeprints, int crr_page);
 
     xyword xyword_tmp;
     ofVec2f anch, margin;
     ofTrueTypeFont font;
     ofVec2f curr_eye;
     vector<eyeprint> eyeprints;
+     vector<eyeprint> eyeprints2;
     vector<int> sections;
     vector<xyword> xywords;
     bool render_flag = true;
     
-    bool debug=false, show_log=false, record_log=false;
+    bool debug=false, show_log=false, record_log=false,show_master=false;
     
     int head, tail, crr_page, line_height, font_size,index;
     float run_from_time;

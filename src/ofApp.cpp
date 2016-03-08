@@ -3,7 +3,8 @@
 #include "iostream"
 #include "boost/algorithm/string.hpp"
 
-#define LOG_FILE_NAME "EyeTrack_2016-03-03-19-42-52-921.txt"
+
+#define LOG_FILE_NAME "EyeTrack_2016-03-05-17-08-15-969.txt"
 #define SCRIPT_FILE_NAME "script.txt"
 
 void ofApp::setup(){
@@ -16,7 +17,7 @@ void ofApp::setup(){
     ofSetBackgroundAuto(false);
     // Set font here: lekton.ttf or vera.ttf or liberation.tff
     font.load("../../lekton.ttf", font_size);
-    ifstream script_stream = ifstream("script.txt");
+    ifstream script_stream = ifstream("../../../../script.txt");
     string script;
     string delims = " ";
     vector<string> strwords;
@@ -50,7 +51,7 @@ void ofApp::setup(){
     receiver = new ofTobiiUDPReceiver(receiveData,8888);
     receiver->startThread();
     // Prepare log file
-    string filename="EyeTrack_"+ofGetTimestampString()+".txt";
+    filename="EyeTrack_"+ofGetTimestampString()+".txt";
     file.open( ofToDataPath(filename).c_str());
     file << "page,x,y,word,word_index,timestamp" << endl;
 }
@@ -72,32 +73,44 @@ void ofApp::draw(){
     if (render_flag) {
         render_page();
         if (show_log) {
+             ofSetColor(0, 255, 0, 100);
             render_eyeprint(eyeprints, crr_page);
+            render_fixed_words(eyeprints, crr_page);
+        }
+        if(show_master){
+             ofSetColor(0, 0, 255, 100);
+        
+            render_eyeprint(eyeprints2, crr_page);
+            ofSetColor(0, 0, 255, 100);
+            render_fixed_words(eyeprints2, crr_page);
         }
         render_flag = false;
     }
     // デバッグ表示
     if(debug) {
         // draw_debug(curr_eye.x, curr_eye.y);
+        ofSetColor(0, 255, 0, 100);
         draw_circle(curr_eye.x, curr_eye.y);
     }
-
 }
 
 bool ofApp::in_word(int x, int y, xyword xyword) {
-    int word_length = xyword.word.length() *  font_size * 1 / 2;
-    int word_height = font_size;
-    if (xyword.x < x &&
-        x < xyword.x + word_length &&
-        xyword.y < y &&
-        y < xyword.y + word_height) {
+    float min_dist = 30.0;
+    int length = xyword.word.length() *  font_size * 1 / 2;
+    int height = font_size;
+    ofVec2f center = ofVec2f(xyword.x + length / 2,
+                             xyword.y - height / 2);
+    if (ofDist(center.x, center.y, x, y) < min_dist) {
+        // ofLine(x, y, center.x, center.y);
+        // ofCircle(center.x, center.y, min_dist);
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 void ofApp::draw_circle(int x, int y) {
-    ofSetColor(0, 255, 0, 100);
+   
     ofCircle(x, y, 5);
 }
 
@@ -112,7 +125,7 @@ void ofApp::render_page() {
     anch.set(margin.x, margin.y);
     head = crr_page == 0 ? 0 : sections[crr_page - 1] + 1;
     tail = sections[crr_page];
-    xyword tmp = {"", 0, 0};
+    xyword tmp = {"", 0, 0, 0};
     for(int i = head; i <= tail; i++) {
         tmp = xywords[i];
         font.drawString(tmp.word, tmp.x, tmp.y);
@@ -123,12 +136,44 @@ void ofApp::render_page() {
     ofDrawBitmapString(page_info, 10, 10);
 }
 
+void ofApp::render_fixed_words(vector<eyeprint> eyeprints, int crr_page) {
+    float min_weight = 10;
+    float min_dist = 40.0;
+    eyeprint eyeprint;
+    xyword xyword;
+    for (int i = 0; i < eyeprints.size(); i++) {
+        eyeprint = eyeprints[i];
+        if (eyeprint.page != crr_page) {
+            continue;
+        } else {
+            // word.weight++ if the eyeprint is near enough
+            for (int h = head; h <= tail; h++) {
+                xyword = xywords[h];
+                if (in_word(eyeprint.x, eyeprint.y, xyword)) {
+                    xywords[h].weight++;
+                }
+            }
+        }
+    }
+    // render words if word.weight is over min_weight
+    for (int i = head; i <= tail; i++) {
+        xyword = xywords[i];
+        if (xyword.weight > min_weight) {
+            ofSetColor(xyword.weight * 255, 0, 0);
+            font.drawString(xyword.word, xyword.x, xyword.y);
+        }
+    }
+}
+
 void ofApp::render_eyeprint(vector<eyeprint> eyeprints, int crr_page) {
     for(int i = 0; i < eyeprints.size(); i++) {
         eyeprint ep = eyeprints[i];
         if (ep.page == crr_page ) {
             draw_circle(ep.x, ep.y);
         }
+    }
+    for(int i = 0; i < xywords.size(); i++) {
+        
     }
 }
 
@@ -158,18 +203,30 @@ void ofApp::keyPressed(int key){
               break;
         case 'd':
             //Debug表示のon/off
-            debug=!debug;
+            debug =! debug;
             break;
             
         case 'r':
             //Recordのon/off
-            record_log=!record_log;
+            record_log =! record_log;
             break;
             
         case 'l':
-            //Log読み込みのon/off
-            eyeprints = readFile(LOG_FILE_NAME);
+            //Log読み込みのon/ofG
+#ifdef LOG_FILE_NAME
+             eyeprints = readFile(LOG_FILE_NAME);
+#else
+            file.close();
+             eyeprints = readFile(filename);
+#endif
+           
             show_log =! show_log;
+            break;
+            
+        case 'm':
+            //Recordのon/off
+            show_master=!show_master;
+           eyeprints2 = readFile("EyeTrack_2016-03-05-13-29-11-844.txt");
             break;
     }
 }
