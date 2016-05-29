@@ -4,8 +4,9 @@
 #include "boost/algorithm/string.hpp"
 
 
-#define LOG_FILE_NAME "Alicia.txt"
-#define SCRIPT_FILE_NAME "script.txt"
+#define LOG_FILE_NAME "matsuda.txt"
+#define SCRIPT_FILE_NAME "../../../../scripts/utokyo.txt"
+// utokyo.txt toritsu.txt center.txt jobs.txt
 
 void ofApp::setup(){
     ofBackground(0, 0, 0);
@@ -17,7 +18,7 @@ void ofApp::setup(){
     ofSetBackgroundAuto(false);
     // Set font here: lekton.ttf or vera.ttf or liberation.tff
     font.load("../../lekton.ttf", font_size);
-    ifstream script_stream = ifstream("../../../../script.txt");
+    ifstream script_stream = ifstream(SCRIPT_FILE_NAME);
     string script;
     string delims = " ";
     vector<string> strwords;
@@ -33,7 +34,7 @@ void ofApp::setup(){
             anch.x,
             anch.y
         };
-        cout << strwords[i] << endl;
+      //  cout << strwords[i] << endl;
         xywords.push_back(xyword_tmp);
         anch.x += (font_size * 3 / 4) * (strwords[i].length() + 1);
         if (anch.x > ofGetWidth() - ofApp::margin.x * 2 || strwords[i] == "\n" ) {
@@ -166,14 +167,15 @@ void ofApp::render_fixed_words(vector<eyeprint> eyeprints, int crr_page) {
 }
 
 void ofApp::render_eyeprint(vector<eyeprint> eyeprints, int crr_page) {
+    eyeprint prev = {0, 0, 0, "", 0, 0};
     for(int i = 0; i < eyeprints.size(); i++) {
         eyeprint ep = eyeprints[i];
         if (ep.page == crr_page ) {
             draw_circle(ep.x, ep.y);
+            ofLine(prev.x, prev.y, ep.x, ep.y);
         }
-    }
-    for(int i = 0; i < xywords.size(); i++) {
-        
+        prev.x = ep.x;
+        prev.y = ep.y;
     }
 }
 
@@ -226,7 +228,7 @@ void ofApp::keyPressed(int key){
         case 'm':
             //Recordのon/off
             show_master=!show_master;
-           eyeprints2 = readFile("EyeTrack_2016-03-05-13-29-11-844.txt");
+           eyeprints2 = readFile("Alicia.txt");
             break;
     }
 }
